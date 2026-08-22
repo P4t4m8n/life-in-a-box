@@ -39,3 +39,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+/generated/prisma
+
+.agents/*/
+.claude/*/
+
+.playwright-mcp/
+.windsurf/
+components/tiptap-templates/simple/data/content.json

@@ -1,0 +1,177 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
+
+body {
+  --tt-toolbar-height: 44px;
+  --tt-theme-text: var(--tt-gray-light-900);
+
+  .dark & {
+    --tt-theme-text: var(--tt-gray-dark-900);
+  }
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  color: var(--tt-theme-text);
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+  padding: 0;
+  overscroll-behavior-y: none;
+}
+
+html,
+body {
+  overscroll-behavior-x: none;
+}
+
+html,
+body,
+#root,
+#app {
+  height: 100%;
+  background-color: var(--tt-bg-color);
+}
+
+::-webkit-scrollbar {
+  width: 0.25rem;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--tt-scrollbar-color) transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--tt-scrollbar-color);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tiptap.ProseMirror {
+  font-family: "DM Sans", sans-serif;
+}
+
+.simple-editor-wrapper {
+  width: 100vw;
+  height: 100vh;
+  overflow: auto;
+}
+
+.simple-editor-search-and-replace {
+  position: fixed;
+  top: calc(var(--tt-toolbar-height) + 0.5rem);
+  right: 0.5rem;
+  z-index: 51;
+  max-height: calc(100dvh - var(--tt-toolbar-height) - 1rem);
+}
+
+.simple-editor-content {
+  max-width: 648px;
+  width: 100%;
+  margin: 0 auto;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.simple-editor-meta {
+  max-width: 648px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 3rem 3rem 0;
+}
+
+.simple-editor-meta-row {
+  display: flex;
+  gap: 0.75rem;
+
+  > * {
+    flex: 1;
+  }
+}
+
+.simple-editor-meta-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.simple-editor-meta-tag {
+  font-family: "DM Sans", sans-serif;
+  font-size: 0.875rem;
+  border: 1px solid var(--tt-border-color);
+  border-radius: 9999px;
+  padding: 0.25rem 0.75rem;
+  background: transparent;
+  color: var(--tt-theme-text);
+  cursor: pointer;
+
+  &[data-selected="true"] {
+    background: var(--tt-brand-color-500, currentColor);
+    border-color: transparent;
+    color: var(--tt-color-highlight-yellow, #fff);
+  }
+}
+
+.simple-editor-meta-tag-input {
+  font-family: "DM Sans", sans-serif;
+  border: 1px solid var(--tt-border-color);
+  border-radius: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  background: transparent;
+  color: var(--tt-theme-text);
+  width: 10rem;
+}
+
+.simple-editor-meta-title,
+.simple-editor-meta-field {
+  font-family: "DM Sans", sans-serif;
+  border: 1px solid var(--tt-border-color);
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: transparent;
+  color: var(--tt-theme-text);
+  resize: vertical;
+}
+
+.simple-editor-meta-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.simple-editor-meta-preview {
+  max-width: 100%;
+  max-height: 240px;
+  object-fit: cover;
+  border-radius: 0.5rem;
+}
+
+.simple-editor-content .tiptap.ProseMirror.simple-editor {
+  flex: 1;
+  padding: 3rem 3rem 30vh;
+}
+
+@media screen and (max-width: 480px) {
+  .simple-editor-search-and-replace {
+    top: 0.5rem;
+    left: 0.5rem;
+    width: auto;
+    max-height: calc(100dvh - 1rem);
+  }
+
+  .simple-editor-meta {
+    padding: 1.5rem 1.5rem 0;
+  }
+
+  .simple-editor-content .tiptap.ProseMirror.simple-editor {
+    padding: 1rem 1.5rem 30vh;
+  }
+}
