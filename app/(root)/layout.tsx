@@ -19,7 +19,7 @@ export default function MainLayout({
       <ScrollHideHeader>
         <SiteHeader />
       </ScrollHideHeader>
-      <main id="main-content" className="min-h-[70vh]" tabIndex={-1}>
+      <main id="main-content" className="min-h-[70vh] " tabIndex={-1}>
         {children}
       </main>
       <SiteFooter />

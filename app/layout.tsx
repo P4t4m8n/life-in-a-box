@@ -45,7 +45,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${notoSansHebrew.variable} ${gveretLevin.variable}`}
       data-scroll-behavior="smooth"
     >
-      <body>{children}</body>
+      <body className="">{children}</body>
     </html>
   );
 }

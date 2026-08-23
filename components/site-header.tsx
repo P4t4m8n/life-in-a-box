@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import Link from "next/link";
 import { authOptions } from "@/lib/auth";
 import { SignOutButton } from "./sign-out-button";
-import { Logo } from "./logo";
+import { LogoSVG } from "./Icons/LogoSVG";
 import { MobileNav } from "./mobile-nav";
 
 const navigation = [
@@ -19,7 +19,7 @@ export async function SiteHeader() {
       <MobileNav
         logo={
           <>
-            <Logo />
+            <LogoSVG />
             <strong className="">החיים בקופסא </strong>
           </>
         }
@@ -33,7 +33,7 @@ export async function SiteHeader() {
         ))}
         <li className="text-sm font-bold hover:underline">
           {session ? (
-            <SignOutButton />
+            <SignOutButton className="hover:underline"/>
           ) : (
             <Link href="/login">כניסה</Link>
           )}

@@ -1,6 +1,6 @@
 "use server";
 
-import { IPostDTO } from "@/interfaces/interfaces";
+import { IPostDTO } from "@/types/app-types";
 import { prisma } from "@/lib/prisma";
 
 export interface SavePostInput {

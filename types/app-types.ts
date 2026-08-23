@@ -14,9 +14,16 @@ export interface IPostDTO {
   accessLevel: string;
   mainPost?: string;
   recomendedPost?: string;
+  category?: ICategoryDTO | null;
 }
 
 export interface ITagDTO {
+  id: string;
+  name: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+export interface ICategoryDTO {
   id: string;
   name: string;
   createdAt: Date;
