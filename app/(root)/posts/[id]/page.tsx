@@ -5,28 +5,23 @@ import { notFound } from "next/navigation";
 import { ArrowRight, Clock3 } from "lucide-react";
 import { renderToReactElement } from "@tiptap/static-renderer/pm/react";
 
-import { articles, getArticleById } from "@/lib/fixtures/articles";
 import { getPostById } from "@/lib/actions/post-actions";
 import { contentExtensions } from "@/lib/tiptap-content-extensions";
-
-export function generateStaticParams() {
-  return articles.map((article) => ({ id: article._id }));
-}
 
 export async function generateMetadata({
   params,
 }: PageProps<"/posts/[id]">): Promise<Metadata> {
   const { id } = await params;
-  const article = getArticleById(id);
-  if (!article) return {};
+  const post = await getPostById(id);
+  if (!post) return {};
 
   return {
-    title: article.title,
-    description: article.description,
+    title: post.title,
+    description: post.description ?? undefined,
     openGraph: {
-      title: article.title,
-      description: article.description,
-      images: [{ url: article.imgSrc }],
+      title: post.title,
+      description: post.description ?? undefined,
+      images: post.imgSrc ? [{ url: post.imgSrc }] : undefined,
     },
   };
 }

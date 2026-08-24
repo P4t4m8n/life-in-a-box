@@ -25,7 +25,7 @@ export const savePost = async (input: IPostEditDTO): Promise<string> => {
       content: input.content as object,
       tags: {
         connectOrCreate: input.tags
-          .map((tag) => tag.name.trim())
+          .map((name) => name.trim())
           .filter(Boolean)
           .map((name) => ({
             where: { name },

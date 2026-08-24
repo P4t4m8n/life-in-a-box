@@ -1,6 +1,6 @@
 import { JsonValue } from "@prisma/client/runtime/client";
 
-export interface IPostDTO extends IPostEditDTO {
+export interface IPostDTO extends Omit<IPostEditDTO, "tags"> {
   id: string;
   createdAt: Date;
   updatedAt: Date;
@@ -17,7 +17,7 @@ export interface IPostEditDTO {
   readingTime?: string | null;
   imgSrc?: string | null;
   imgAlt?: string | null;
-  tags: ITagDTO[];
+  tags: string[];
   content: JsonValue;
 }
 

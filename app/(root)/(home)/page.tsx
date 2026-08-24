@@ -3,21 +3,26 @@ import Link from "next/link";
 import { ArrowLeft, BookOpen, Clock3, Pin } from "lucide-react";
 
 import { StickerBadge } from "@/components/sticker-badge";
-import { articles, type Article } from "@/lib/fixtures/articles";
-import { getMainPost } from "@/lib/actions/post-actions";
+import { getMainPost, getPublicPosts } from "@/lib/actions/post-actions";
 import { IPostDTO } from "@/types/app-types";
 
-const [mainArticle, ...otherArticles] = articles;
-
 export default async function Home() {
-  const mainPost = await getMainPost();
+  const [mainPost, recentPosts] = await Promise.all([
+    getMainPost(),
+    getPublicPosts({ sort: "newest" }),
+  ]);
+
+  const otherPosts = recentPosts
+    .filter((post) => post.id !== mainPost?.id)
+    .slice(0, 3);
+
   return (
     <div className=" w-full  bg-(--surface) bg-[linear-gradient(rgba(40,89,67,0.09)_1px,transparent_1px)] bg-size-[5000px_2.5rem]">
       <HeroSection />
 
       {mainPost && <MainArticle {...mainPost} />}
 
-      <RecentlyPublished />
+      <RecentlyPublished posts={otherPosts} />
 
       {/* <PopularSection /> */}
 
@@ -64,7 +69,7 @@ const MainArticle = ({
     >
       <Image
         className="-z-2 object-cover object-[center_45%]"
-        src={imgSrc || "/images/placeholder.jpg"}
+        src={imgSrc || "/open-book.jpg"}
         alt={imgAlt || "Main article image"}
         fill
         sizes="100vw"
@@ -103,7 +108,9 @@ const MainArticle = ({
 
 const cardRotations = ["-rotate-2", "rotate-2", "-rotate-1"];
 
-const RecentlyPublished = () => {
+const RecentlyPublished = ({ posts }: { posts: IPostDTO[] }) => {
+  if (posts.length === 0) return null;
+
   return (
     <section
       className="border-b-2 border-dashed border-(--line) py-[clamp(4rem,8vw,7rem)] lg:px-8"
@@ -125,9 +132,9 @@ const RecentlyPublished = () => {
         </p>
       </div>
       <div className="grid lg:grid-cols-3 px-4 lg:px-0  gap-6 grid-cols-1 items-center justify-center">
-        {otherArticles.map((article, index) => (
+        {posts.map((post, index) => (
           <article
-            key={article._id}
+            key={post.id}
             className={`group relative min-w-0   overflow-hidden rounded-sm border-2 border-white bg-white p-3 shadow-md transition-transform duration-300 hover:rotate-0 hover:shadow-lg ${
               cardRotations[index % cardRotations.length]
             }`}
@@ -142,31 +149,32 @@ const RecentlyPublished = () => {
               size={30}
             />
             <Link
-              href={`/articles/${article._id}`}
+              href={`/posts/${post.id}`}
               className="absolute inset-0 z-10"
-              aria-label={article.title}
+              aria-label={post.title}
             />
             <div className="relative aspect-video overflow-hidden bg-(--sky)">
               <Image
                 className="object-cover transition-transform duration-500 group-hover:scale-[1.025]"
-                src={article.imgSrc}
-                alt={article.imgAlt}
+                src={post.imgSrc || "/open-book.jpg"}
+                alt={post.imgAlt || post.title}
                 fill
                 sizes="(max-width: 900px) 100vw, 33vw"
               />
             </div>
             <div className="px-1 pt-4 pb-1">
               <p className="m-0 text-xs font-extrabold text-(--leaf)">
-                {article.category}
+                {post.tags[0]?.name ?? "כללי"}
               </p>
               <h3 className="mt-2 mb-3 font-serif text-[clamp(1.6rem,2.6vw,2.2rem)] leading-[1.08] font-normal">
-                {article.title}
+                {post.title}
               </h3>
               <p className="leading-[1.7] text-(--muted)">
-                {article.description}
+                {post.description}
               </p>
               <div className="mt-6 flex items-center gap-2 text-xs font-bold text-(--muted)">
-                <Clock3 aria-hidden="true" size={15} /> {article.readingTime}
+                <Clock3 aria-hidden="true" size={15} />{" "}
+                {post.readingTime ? `${post.readingTime} דקות קריאה` : "קריאה קצרה"}
               </div>
             </div>
           </article>

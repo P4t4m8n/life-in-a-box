@@ -1,10 +1,6 @@
 import type { Metadata } from "next";
 import { Gveret_Levin, Noto_Sans_Hebrew } from "next/font/google";
 
-import { ScrollHideHeader } from "@/components/scroll-hide-header";
-import { SiteFooter } from "@/components/site-footer";
-import { SiteHeader } from "@/components/site-header";
-
 import "./globals.css";
 
 const notoSansHebrew = Noto_Sans_Hebrew({
