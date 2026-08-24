@@ -3,15 +3,15 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 
-export async function getTags() {
+export const getTags = async () => {
   const tags = await prisma.tag.findMany({
     orderBy: { name: "asc" },
   });
 
   return tags;
-}
+};
 
-export async function createTag(name: string) {
+export const createTag = async (name: string) => {
   const tag = await prisma.tag.upsert({
     where: { name },
     update: {},
@@ -21,4 +21,6 @@ export async function createTag(name: string) {
   revalidatePath("/admin/editor");
 
   return tag;
-}
+};
+
+

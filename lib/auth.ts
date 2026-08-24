@@ -1,4 +1,4 @@
-import type { NextAuthOptions } from "next-auth";
+import { getServerSession, type NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 
 import { prisma } from "@/lib/prisma";
@@ -78,3 +78,14 @@ export const authOptions: NextAuthOptions = {
     },
   },
 };
+
+// Defense-in-depth guard for server actions, in case route-level protection is ever bypassed.
+export async function requireAdmin() {
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user || session.user.role !== Role.ADMIN) {
+    throw new Error("Unauthorized");
+  }
+
+  return session.user;
+}

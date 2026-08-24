@@ -23,15 +23,14 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "חוט מקשר",
-    template: "%s | חוט מקשר",
+    default: "החיים בקופסא",
+    template: "%s | החיים בקופסא",
   },
-  description: "כתב עת עצמאי על מלאכה, תשומת לב והרעיונות שמעצבים את היומיום.",
-  applicationName: "חוט מקשר",
+  description: "בלוג אישי, על החיים היקום וכל השאר",
+  applicationName: "החיים בקופסא",
   openGraph: {
-    title: "חוט מקשר",
-    description:
-      "כתב עת עצמאי על מלאכה, תשומת לב והרעיונות שמעצבים את היומיום.",
+    title: "החיים בקופסא",
+    description: "בלוג אישי, על החיים היקום וכל השאר",
     type: "website",
     images: [{ url: "/writing-desk.jpg", width: 1800, height: 1200 }],
   },
@@ -45,7 +44,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${notoSansHebrew.variable} ${gveretLevin.variable}`}
       data-scroll-behavior="smooth"
     >
-      <body className="">{children}</body>
+      <body className="grid">{children}</body>
     </html>
   );
 }

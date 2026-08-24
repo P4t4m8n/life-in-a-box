@@ -1,4 +1,3 @@
-import { GitBranchIcon } from "lucide-react";
 import Link from "next/link";
 import { LinkedinSvg } from "./Icons/LinkedinSvg";
 import { GitSvg } from "./Icons/GitSVG";
@@ -8,7 +7,7 @@ const ERAN_LINKEDIN = "https://www.linkedin.com/in/michaelieran/";
 
 export function SiteFooter() {
   return (
-    <footer className="px-4 border-t-2 border-dashed border-white/30 bg-foreground py-12  
+    <footer className="px-4 w-full border-t-2 border-dashed border-white/30 bg-foreground py-12  
     text-[#e8ece8] mx-auto  grid grid-cols-[1.1fr_1fr_1fr] gap-8 max-[760px]:grid-cols-1">
       
         <p className="-rotate-1 mb-2 inline-block lg:text-center font-serif text-2xl font-normal text-white">

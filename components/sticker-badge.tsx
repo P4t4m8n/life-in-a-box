@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-type StickerBadgeProps = {
+export interface StickerBadgeProps {
   children: ReactNode;
   tone?: "leaf" | "light" | "coral";
   className?: string;

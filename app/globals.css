@@ -25,6 +25,12 @@
 }
 html {
   scroll-behavior: smooth;
+    scrollbar-gutter: stable;
+
+    @media(min-width: 759px) {
+      scrollbar-gutter: auto;
+    }
+
 }
 
 body {
@@ -51,8 +57,22 @@ a {
   -webkit-tap-highlight-color: transparent;
 }
 :focus-visible {
-  outline: 3px solid var(--focus);
-  outline-offset: 4px;
+  /* outline: 3px solid var(--focus);
+  outline-offset: 4px; */
+  /* transition:
+    color 0.3s,
+    border-color 0.3s;
+  outline: none;
+  border-color: var(--line); */
+}
+:focus-visible {
+  /* outline: 1px solid var(--focus); */
+  /* outline-offset: 4px; */
+  /* transition:
+    color 0.3s,
+    border-color 0.3s;
+  outline: none;
+  border-color: var(--line); */
 }
 ::selection {
   background: var(--sky);
@@ -72,5 +92,3 @@ a {
     transition-duration: 0.01ms !important;
   }
 }
-
-

@@ -22,5 +22,8 @@ export default async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/pending-approval", request.url));
   }
 
-  return NextResponse.next();
+  // robots.txt already disallows crawling /admin/, but browsers/bots that ignore it should still be told not to index it.
+  const response = NextResponse.next();
+  response.headers.set("X-Robots-Tag", "noindex, nofollow");
+  return response;
 }

@@ -15,7 +15,7 @@ export default async function Home() {
     <div className=" w-full  bg-(--surface) bg-[linear-gradient(rgba(40,89,67,0.09)_1px,transparent_1px)] bg-size-[5000px_2.5rem]">
       <HeroSection />
 
-      <MainArticle {...mainPost!} />
+      {mainPost && <MainArticle {...mainPost} />}
 
       <RecentlyPublished />
 
@@ -110,7 +110,7 @@ const RecentlyPublished = () => {
       id="latest"
       aria-labelledby="latest-title"
     >
-      <div className="mb-10 flex items-end justify-between gap-8 lg:grid">
+      <div className="mb-10 flex items-end justify-between gap-8 lg:grid px-8">
         <div className="">
           <StickerBadge tone="leaf">רשימות אחרונות</StickerBadge>
           <h2

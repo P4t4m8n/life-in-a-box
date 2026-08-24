@@ -1,13 +1,7 @@
 import { JsonValue } from "@prisma/client/runtime/client";
 
-export interface IPostDTO {
+export interface IPostDTO extends IPostEditDTO {
   id: string;
-  title: string;
-  content: JsonValue;
-  description?: string | null;
-  readingTime?: string | null;
-  imgSrc?: string | null;
-  imgAlt?: string | null;
   createdAt: Date;
   updatedAt: Date;
   tags: ITagDTO[];
@@ -15,6 +9,16 @@ export interface IPostDTO {
   mainPost?: string;
   recomendedPost?: string;
   category?: ICategoryDTO | null;
+}
+
+export interface IPostEditDTO {
+  title: string;
+  description?: string | null;
+  readingTime?: string | null;
+  imgSrc?: string | null;
+  imgAlt?: string | null;
+  tags: ITagDTO[];
+  content: JsonValue;
 }
 
 export interface ITagDTO {
@@ -28,4 +32,11 @@ export interface ICategoryDTO {
   name: string;
   createdAt: Date;
   updatedAt: Date;
+}
+
+
+export interface IPublicPostsQuery {
+  search?: string;
+  tag?: string;
+  sort?: "newest" | "oldest";
 }

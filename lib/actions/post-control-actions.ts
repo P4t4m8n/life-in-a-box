@@ -2,10 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 
+import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import type { PostStatus } from "@/generated/prisma/enums";
 
-export interface AdminPostRow {
+interface AdminPostRow {
   id: string;
   title: string;
   status: PostStatus;
@@ -14,7 +15,9 @@ export interface AdminPostRow {
   isRecommended: boolean;
 }
 
-export async function getAdminPosts(): Promise<AdminPostRow[]> {
+export const getAdminPosts = async (): Promise<AdminPostRow[]> => {
+  await requireAdmin();
+
   const posts = await prisma.post.findMany({
     orderBy: { createdAt: "desc" },
     include: { mainPost: true, recomendedPost: true },
@@ -28,16 +31,20 @@ export async function getAdminPosts(): Promise<AdminPostRow[]> {
     isMain: post.mainPost !== null,
     isRecommended: post.recomendedPost !== null,
   }));
-}
+};
 
-export async function setPostStatus(postId: string, status: PostStatus) {
+export const setPostStatus = async (postId: string, status: PostStatus) => {
+  await requireAdmin();
+
   await prisma.post.update({ where: { id: postId }, data: { status } });
 
   revalidatePath("/admin/posts");
   revalidatePath("/");
-}
+};
 
-export async function setMainPost(postId: string) {
+export const setMainPost = async (postId: string) => {
+  await requireAdmin();
+
   // Only one post can be the main post at a time.
   await prisma.$transaction([
     prisma.mainPost.deleteMany({}),
@@ -46,16 +53,20 @@ export async function setMainPost(postId: string) {
 
   revalidatePath("/admin/posts");
   revalidatePath("/");
-}
+};
 
-export async function clearMainPost() {
+export const clearMainPost = async () => {
+  await requireAdmin();
+
   await prisma.mainPost.deleteMany({});
 
   revalidatePath("/admin/posts");
   revalidatePath("/");
-}
+};
 
-export async function setRecommendedPost(postId: string) {
+export const setRecommendedPost = async (postId: string) => {
+  await requireAdmin();
+
   // Only one post can be the recommended post at a time.
   await prisma.$transaction([
     prisma.recomendedPost.deleteMany({}),
@@ -64,11 +75,13 @@ export async function setRecommendedPost(postId: string) {
 
   revalidatePath("/admin/posts");
   revalidatePath("/");
-}
+};
 
-export async function clearRecommendedPost() {
+export const clearRecommendedPost = async () => {
+  await requireAdmin();
+
   await prisma.recomendedPost.deleteMany({});
 
   revalidatePath("/admin/posts");
   revalidatePath("/");
-}
+};

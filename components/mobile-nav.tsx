@@ -56,7 +56,9 @@ export function MobileNav({
         <AnimatedHamburger open={open} className="w-6 h-6 stroke-black" />
       </button>
 
-      <ul className="hidden gap-2 md:flex md:flex-row">{children}</ul>
+      <ul className="hidden gap-2 md:flex md:flex-row items-center ">
+        {children}
+      </ul>
 
       <div
         role="dialog"
@@ -67,11 +69,11 @@ export function MobileNav({
         onClick={(e) => {
           if (e.target === e.currentTarget) setOpen(false);
         }}
-        className={`fixed inset-x-0 top-20.5 z-40 h-[calc(100svh-5.125rem)] w-dvw border-0 bg-(--surface) p-6
-          transition-[opacity,translate] duration-300 ease-out md:hidden ${
+        className={`fixed left-0 top-20.5 z-40 h-[calc(100svh-5.125rem)] w-0 transition-all border-0 bg-(--surface) p-6
+           duration-300 ease-out lg:hidden ${
             open
-              ? "translate-y-0 opacity-100 pointer-events-auto"
-              : "-translate-y-4 opacity-0 pointer-events-none"
+              ? "  pointer-events-auto w-full"
+              : " -right-12  pointer-events-none w-0 overflow-hidden"
           }`}
       >
         <ul

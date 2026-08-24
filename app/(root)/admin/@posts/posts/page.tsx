@@ -11,7 +11,7 @@ import type { PostStatus } from "@/generated/prisma/enums";
 const statusLabels: Record<PostStatus, string> = {
   DRAFT: "טיוטה",
   PUBLISHED: "פורסם",
-  ARCHIVED: "הוסר",
+  ARCHIVED: "ארכיון",
 };
 
 export default async function AdminPostsPage() {

@@ -2,11 +2,13 @@ import { getServerSession } from "next-auth";
 import Link from "next/link";
 import { authOptions } from "@/lib/auth";
 import { SignOutButton } from "./sign-out-button";
+import { UserAvatar } from "./user-avatar";
 import { LogoSVG } from "./Icons/LogoSVG";
 import { MobileNav } from "./mobile-nav";
 
 const navigation = [
   { href: "/", label: "ראשי" },
+  { href: "/posts", label: "פוסטים" },
   { href: "/about", label: "אודות" },
   { href: "/contact", label: "יצירת קשר" },
 ];
@@ -31,13 +33,16 @@ export async function SiteHeader() {
             </Link>
           </li>
         ))}
-        <li className="text-sm font-bold hover:underline">
-          {session ? (
-            <SignOutButton className="hover:underline"/>
-          ) : (
+        {session ? (
+          <li className="flex items-center gap-2 text-sm font-bold">
+            <SignOutButton className="hover:underline" />
+            <UserAvatar name={session.user.name} image={session.user.image} />
+          </li>
+        ) : (
+          <li className="text-sm font-bold hover:underline">
             <Link href="/login">כניסה</Link>
-          )}
-        </li>
+          </li>
+        )}
       </MobileNav>
     </header>
   );
