@@ -1,16 +1,22 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, BookOpen, Clock3, Pin } from "lucide-react";
+import { ArrowLeft, Clock3, Lock, Pin } from "lucide-react";
 
 import { StickerBadge } from "@/components/sticker-badge";
-import { getMainPost, getPublicPosts } from "@/lib/actions/post-actions";
+import {
+  getLatestMemberPost,
+  getMainPost,
+  getPublicPosts,
+} from "@/lib/actions/post-actions";
 import { IPostDTO } from "@/types/app-types";
 
 export default async function Home() {
-  const [mainPost, recentPosts] = await Promise.all([
+  const [mainPost, recentPosts, memberPost] = await Promise.all([
     getMainPost(),
     getPublicPosts({ sort: "newest" }),
+    getLatestMemberPost(),
   ]);
+  console.log("🚀 ~ Home ~ memberPost:", memberPost)
 
   const otherPosts = recentPosts
     .filter((post) => post.id !== mainPost?.id)
@@ -26,7 +32,7 @@ export default async function Home() {
 
       {/* <PopularSection /> */}
 
-      <RecommendedSection />
+      <PrivateSection post={memberPost} />
     </div>
   );
 }
@@ -107,7 +113,6 @@ const MainArticle = ({
 };
 
 const cardRotations = ["-rotate-2", "rotate-2", "-rotate-1"];
-
 const RecentlyPublished = ({ posts }: { posts: IPostDTO[] }) => {
   if (posts.length === 0) return null;
 
@@ -169,12 +174,12 @@ const RecentlyPublished = ({ posts }: { posts: IPostDTO[] }) => {
               <h3 className="mt-2 mb-3 font-serif text-[clamp(1.6rem,2.6vw,2.2rem)] leading-[1.08] font-normal">
                 {post.title}
               </h3>
-              <p className="leading-[1.7] text-(--muted)">
-                {post.description}
-              </p>
+              <p className="leading-[1.7] text-(--muted)">{post.description}</p>
               <div className="mt-6 flex items-center gap-2 text-xs font-bold text-(--muted)">
                 <Clock3 aria-hidden="true" size={15} />{" "}
-                {post.readingTime ? `${post.readingTime} דקות קריאה` : "קריאה קצרה"}
+                {post.readingTime
+                  ? `${post.readingTime} דקות קריאה`
+                  : "קריאה קצרה"}
               </div>
             </div>
           </article>
@@ -184,7 +189,16 @@ const RecentlyPublished = ({ posts }: { posts: IPostDTO[] }) => {
   );
 };
 
-const RecommendedSection = () => {
+const PrivateSection = ({
+  post,
+}: {
+  post: Awaited<ReturnType<typeof getLatestMemberPost>>;
+}) => {
+  if (!post) return null;
+
+  const { title, description } = post;
+  const loginHref = `/login?callbackUrl=${encodeURIComponent(`/posts/${post.id}`)}`;
+
   return (
     <section
       className="bg-(--sky) py-[clamp(4rem,8vw,7rem)]"
@@ -192,29 +206,38 @@ const RecommendedSection = () => {
     >
       <div className="mx-auto w-[calc(100%-2rem)] max-w-304">
         <div className="relative -rotate-1 rounded-sm border-2 border-dashed border-(--leaf)/50 bg-white p-[clamp(1.5rem,4vw,3rem)] shadow-lg">
-          <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-8 max-[680px]:grid-cols-1">
-            <BookOpen className="text-(--leaf) " size={34} aria-hidden="true" />
+          <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-8 max-[42.5rem]:grid-cols-1">
+            <Lock className="text-(--leaf) " size={34} aria-hidden="true" />
             <div>
-              <StickerBadge tone="leaf">מקום טוב להכנס לקופסא</StickerBadge>
+              <StickerBadge tone="leaf">לחברים בלבד</StickerBadge>
               <h2
                 className="my-4 font-serif text-[clamp(2.4rem,5vw,4.5rem)] leading-none font-normal"
                 id="recommended-title"
               >
-                מקום טוב להתחיל בו
+                {title}{" "}
               </h2>
               <p className="mb-0 max-w-2xl leading-[1.7] text-foreground">
-                אם רוצים לדעת, איפה להתחיל ולדעת אם לבזבז את הזמן{" "}
+                {description || "התחברו כדי לקרוא את הפוסט הזה"}
               </p>
             </div>
-            <Link
-              className="inline-flex min-h-11 items-center gap-2.5 font-extrabold text-(--leaf) underline decoration-2 underline-offset-5 max-[680px]:justify-self-start"
-              href="/about"
-            >
-              על הקופסא <ArrowLeft aria-hidden="true" size={17} />
-            </Link>
+            <div className="grid gap-2 max-[680px]:justify-self-start">
+              <Link
+                className="inline-flex min-h-11 items-center justify-center gap-2.5 rounded-sm bg-(--leaf) px-5 font-extrabold text-white"
+                href={loginHref}
+              >
+                התחברות
+              </Link>
+              <Link
+                className="inline-flex min-h-11 items-center justify-center gap-2.5 font-extrabold text-(--leaf) underline decoration-2 underline-offset-5"
+                href={loginHref}
+              >
+                הרשמה <ArrowLeft aria-hidden="true" size={17} />
+              </Link>
+            </div>
           </div>
         </div>
       </div>
     </section>
   );
 };
+

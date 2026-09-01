@@ -12,6 +12,7 @@ export interface IPostDTO extends Omit<IPostEditDTO, "tags"> {
 }
 
 export interface IPostEditDTO {
+  id?: string;
   title: string;
   description?: string | null;
   readingTime?: string | null;

@@ -1,11 +1,14 @@
 "use client"
 
 import { useCallback, useRef, useState } from "react"
-import { EditorContent, EditorContext, useEditor } from "@tiptap/react"
+import { EditorContent, EditorContext, useEditor, type Content } from "@tiptap/react"
 
 // --- Actions ---
 import { savePost } from "@/lib/actions/post-actions"
 import { createTag } from "@/lib/actions/tags-actions"
+
+// --- Types ---
+import type { IPostEditDTO } from "@/types/app-types"
 
 // --- Tiptap Core Extensions ---
 import { FindAndReplace } from "@tiptap/extension-find-and-replace"
@@ -89,6 +92,7 @@ const MainToolbarContent = ({
   isMobile,
   onSaveClick,
   isSaving,
+  isEditing,
 }: {
   onHighlighterClick: () => void
   onLinkClick: () => void
@@ -98,6 +102,7 @@ const MainToolbarContent = ({
   isMobile: boolean
   onSaveClick: () => void
   isSaving: boolean
+  isEditing: boolean
 }) => {
   return (
     <>
@@ -171,7 +176,7 @@ const MainToolbarContent = ({
         />
         <ThemeToggle />
         <Button onClick={onSaveClick} disabled={isSaving} variant="primary">
-          {isSaving ? "Saving…" : "Save"}
+          {isSaving ? "Saving…" : isEditing ? "Update" : "Save"}
         </Button>
       </ToolbarGroup>
     </>
@@ -209,8 +214,10 @@ const MobileToolbarContent = ({
 
 export function SimpleEditor({
   initialTags = [],
+  initialPost,
 }: {
   initialTags?: string[]
+  initialPost?: IPostEditDTO
 }) {
   const isMobile = useIsBreakpoint()
   const { height } = useWindowSize()
@@ -222,13 +229,15 @@ export function SimpleEditor({
   const toolbarRef = useRef<HTMLDivElement>(null)
   const searchAndReplaceButtonRef = useRef<HTMLButtonElement>(null)
 
-  const [title, setTitle] = useState("")
-  const [description, setDescription] = useState("")
-  const [readingTime, setReadingTime] = useState("")
-  const [imgSrc, setImgSrc] = useState("")
+  const [title, setTitle] = useState(initialPost?.title ?? "")
+  const [description, setDescription] = useState(initialPost?.description ?? "")
+  const [readingTime, setReadingTime] = useState(initialPost?.readingTime ?? "")
+  const [imgSrc, setImgSrc] = useState(initialPost?.imgSrc ?? "")
 
   const [availableTags, setAvailableTags] = useState<string[]>(initialTags)
-  const [selectedTags, setSelectedTags] = useState<string[]>([])
+  const [selectedTags, setSelectedTags] = useState<string[]>(
+    initialPost?.tags ?? []
+  )
   const [newTagName, setNewTagName] = useState("")
 
   const toggleTag = useCallback((name: string) => {
@@ -278,6 +287,7 @@ export function SimpleEditor({
         onError: (error) => console.error("Upload failed:", error),
       }),
     ],
+    content: (initialPost?.content as Content | undefined) ?? undefined,
     "autofocus": "end",
   })
 
@@ -326,6 +336,7 @@ export function SimpleEditor({
       // server action boundary.
       const json = JSON.parse(JSON.stringify(editor.getJSON()))
       await savePost({
+        id: initialPost?.id,
         title,
         description,
         readingTime,
@@ -337,7 +348,7 @@ export function SimpleEditor({
     } finally {
       setIsSaving(false)
     }
-  }, [editor, title, description, readingTime, imgSrc, selectedTags])
+  }, [editor, initialPost?.id, title, description, readingTime, imgSrc, selectedTags])
 
   return (
     <div className="simple-editor-wrapper">
@@ -362,6 +373,7 @@ export function SimpleEditor({
               isMobile={isMobile}
               onSaveClick={handleSave}
               isSaving={isSaving}
+              isEditing={!!initialPost?.id}
             />
           ) : (
             <MobileToolbarContent

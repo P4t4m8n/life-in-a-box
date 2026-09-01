@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { ArrowRight, Clock3 } from "lucide-react";
 import { renderToReactElement } from "@tiptap/static-renderer/pm/react";
 
@@ -12,8 +12,9 @@ export async function generateMetadata({
   params,
 }: PageProps<"/posts/[id]">): Promise<Metadata> {
   const { id } = await params;
-  const post = await getPostById(id);
-  if (!post) return {};
+  const result = await getPostById(id);
+  if (result.status !== "ok") return {};
+  const { post } = result;
 
   return {
     title: post.title,
@@ -30,11 +31,14 @@ export default async function ArticlePage({
   params,
 }: PageProps<"/posts/[id]">) {
   const { id } = await params;
-  const post = await getPostById(id);
+  const result = await getPostById(id);
 
-  if (!post) notFound();
+  if (result.status === "not-found") notFound();
+  if (result.status === "login-required") {
+    redirect(`/login?callbackUrl=${encodeURIComponent(`/posts/${id}`)}`);
+  }
 
-  const { title, readingTime, imgSrc, imgAlt, content } = post;
+  const { title, readingTime, imgSrc, imgAlt, content } = result.post;
 
   return (
     <article className="p-4 w-full grid gap-4">

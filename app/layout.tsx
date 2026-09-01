@@ -40,7 +40,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${notoSansHebrew.variable} ${gveretLevin.variable}`}
       data-scroll-behavior="smooth"
     >
-      <body className="grid">{children}</body>
+      <body className="flex flex-col h-fit min-h-screen">{children}</body>
     </html>
   );
 }

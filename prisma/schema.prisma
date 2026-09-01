@@ -53,6 +53,7 @@ model Post {
   category       Category?       @relation(fields: [categoryId], references: [id])
   accessLevel    AccessLevel     @default(PUBLIC)
   mainPost       MainPost?
+  mainMemberPost MainMemberPost?
   recomendedPost RecomendedPost?
 }
 
@@ -73,6 +74,15 @@ model Category {
 }
 
 model MainPost {
+  id        String   @id @default(cuid())
+  postId    String   @unique
+  post      Post     @relation(fields: [postId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Pinned post shown in the member-only teaser section, independent of MainPost.
+model MainMemberPost {
   id        String   @id @default(cuid())
   postId    String   @unique
   post      Post     @relation(fields: [postId], references: [id])

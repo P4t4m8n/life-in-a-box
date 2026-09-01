@@ -15,27 +15,62 @@ import {
 export const savePost = async (input: IPostEditDTO): Promise<string> => {
   await requireAdmin();
 
+  const connectOrCreate = input.tags
+    .map((name) => name.trim())
+    .filter(Boolean)
+    .map((name) => ({
+      where: { name },
+      create: { name },
+    }));
+
+  const baseData = {
+    title: input.title || "Untitled",
+    description: input.description || null,
+    readingTime: input.readingTime || null,
+    imgSrc: input.imgSrc || null,
+    imgAlt: input.imgAlt || null,
+    content: input.content as object,
+  };
+
+  if (input.id) {
+    // `set: []` first, so tags removed in the editor are unlinked before reconnecting the rest.
+    const post = await prisma.post.update({
+      where: { id: input.id },
+      data: { ...baseData, tags: { set: [], connectOrCreate } },
+    });
+    return post.id;
+  }
+
   const post = await prisma.post.create({
-    data: {
-      title: input.title || "Untitled",
-      description: input.description || null,
-      readingTime: input.readingTime || null,
-      imgSrc: input.imgSrc || null,
-      imgAlt: input.imgAlt || null,
-      content: input.content as object,
-      tags: {
-        connectOrCreate: input.tags
-          .map((name) => name.trim())
-          .filter(Boolean)
-          .map((name) => ({
-            where: { name },
-            create: { name },
-          })),
-      },
-    },
+    data: { ...baseData, tags: { connectOrCreate } },
   });
 
   return post.id;
+};
+
+// Post data shaped for the editor, including access-level fields the admin UI toggles separately.
+export const getPostForEdit = async (
+  id: string,
+): Promise<IPostEditDTO | null> => {
+  await requireAdmin();
+
+  const post = await prisma.post.findUnique({
+    where: { id },
+    include: { tags: true },
+  });
+
+  if (!post) return null;
+
+  return {
+    id: post.id,
+    title: post.title,
+    description: post.description,
+    readingTime: post.readingTime,
+    imgSrc: post.imgSrc,
+    imgAlt: post.imgAlt,
+    tags: post.tags.map((tag) => tag.name),
+    content: post.content,
+  };
 };
 
 export const getMainPost = async (): Promise<IPostDTO | null> => {
@@ -47,12 +82,22 @@ export const getMainPost = async (): Promise<IPostDTO | null> => {
     },
   });
 
-  if (!mainPost || mainPost.post.status !== PostStatus.PUBLISHED) return null;
+  if (
+    !mainPost ||
+    mainPost.post.status !== PostStatus.PUBLISHED ||
+    mainPost.post.accessLevel !== AccessLevel.PUBLIC
+  )
+    return null;
 
   return mainPost.post;
 };
 
-export const getPostById = async (id: string): Promise<IPostDTO | null> => {
+export type PostAccessResult =
+  | { status: "ok"; post: IPostDTO }
+  | { status: "not-found" }
+  | { status: "login-required" };
+
+export const getPostById = async (id: string): Promise<PostAccessResult> => {
   const post = await prisma.post.findUnique({
     where: { id },
     include: {
@@ -60,26 +105,68 @@ export const getPostById = async (id: string): Promise<IPostDTO | null> => {
     },
   });
 
-  if (!post) return null;
+  if (!post) return { status: "not-found" };
 
   const session = await getServerSession(authOptions);
   const viewer = session?.user;
 
   // Admins can preview any post regardless of status/access level.
-  if (viewer?.role === Role.ADMIN) return post;
+  if (viewer?.role === Role.ADMIN) return { status: "ok", post };
 
-  if (post.status !== PostStatus.PUBLISHED) return null;
+  if (post.status !== PostStatus.PUBLISHED) return { status: "not-found" };
 
-  if (post.accessLevel === AccessLevel.PRIVATE) return null;
+  if (post.accessLevel === AccessLevel.PRIVATE) return { status: "not-found" };
 
   if (
     post.accessLevel === AccessLevel.USER &&
     (viewer?.status !== UserStatus.APPROVED || viewer?.role !== Role.USER)
   ) {
-    return null;
+    return { status: "login-required" };
   }
 
-  return post;
+  return { status: "ok", post };
+};
+
+// Latest published member-only post — used to tease sign-up on the homepage.
+// An admin-pinned member-main post takes priority over the latest-by-date fallback.
+export const getLatestMemberPost = async () => {
+  const pinned = await prisma.mainMemberPost.findFirst({
+    include: {
+      post: {
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          imgSrc: true,
+          imgAlt: true,
+          status: true,
+          accessLevel: true,
+        },
+      },
+    },
+  });
+  console.log("🚀 ~ getLatestMemberPost ~ pinned:", pinned)
+
+  if (
+    pinned &&
+    pinned.post.status === PostStatus.PUBLISHED &&
+    pinned.post.accessLevel === AccessLevel.USER
+  ) {
+    const { id, title, description, imgSrc, imgAlt } = pinned.post;
+    return { id, title, description, imgSrc, imgAlt };
+  }
+
+  return prisma.post.findFirst({
+    where: { status: PostStatus.PUBLISHED, accessLevel: AccessLevel.USER },
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      imgSrc: true,
+      imgAlt: true,
+    },
+  });
 };
 
 // Public, published posts only — used to build the sitemap.
