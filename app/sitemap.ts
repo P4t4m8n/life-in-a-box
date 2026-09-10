@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 
+// --- Actions ---
 import { getPublishedPostsForSitemap } from "@/lib/actions/post-actions";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";

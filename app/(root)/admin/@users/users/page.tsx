@@ -1,4 +1,7 @@
+// --- Actions ---
 import { getAllUsers, setUserStatus } from "@/lib/actions/user-actions";
+
+// --- Prisma ---
 import type { UserStatus } from "@/generated/prisma/enums";
 
 const statusLabels: Record<UserStatus, string> = {
@@ -27,39 +30,12 @@ export default async function AdminUsersPage() {
           </thead>
           <tbody>
             {users.map((user) => {
-              const isProtectedAdmin = user.email === adminEmail;
-
               return (
-                <tr
+                <UserPreview
                   key={user.id}
-                  className="border-b border-dashed border-(--line)"
-                >
-                  <td className="p-3">
-                    <div className="font-bold">{user.name ?? user.email}</div>
-                    <div className="text-(--muted)">{user.email}</div>
-                  </td>
-                  <td className="p-3">{statusLabels[user.status]}</td>
-                  <td className="p-3">
-                    <div className="flex flex-wrap gap-2">
-                      {(Object.keys(statusLabels) as UserStatus[]).map(
-                        (status) => (
-                          <form
-                            key={status}
-                            action={setUserStatus.bind(null, user.id, status)}
-                          >
-                            <button
-                              type="submit"
-                              disabled={isProtectedAdmin || user.status === status}
-                              className="rounded-full border-2 border-dashed border-(--leaf) px-3 py-1 text-xs font-bold disabled:opacity-40"
-                            >
-                              {statusLabels[status]}
-                            </button>
-                          </form>
-                        ),
-                      )}
-                    </div>
-                  </td>
-                </tr>
+                  user={user}
+                  adminEmail={adminEmail}
+                />
               );
             })}
           </tbody>
@@ -68,3 +44,41 @@ export default async function AdminUsersPage() {
     </div>
   );
 }
+
+const UserPreview = ({
+  user,
+  adminEmail,
+}: {
+  user: Awaited<ReturnType<typeof getAllUsers>>[number];
+  adminEmail?: string;
+}) => {
+  const isProtectedAdmin = user.email === adminEmail;
+
+  return (
+    <tr key={user.id} className="border-b border-dashed border-(--line)">
+      <td className="p-3">
+        <div className="font-bold">{user.name ?? user.email}</div>
+        <div className="text-(--muted)">{user.email}</div>
+      </td>
+      <td className="p-3">{statusLabels[user.status]}</td>
+      <td className="p-3">
+        <div className="flex flex-wrap gap-2">
+          {(Object.keys(statusLabels) as UserStatus[]).map((status) => (
+            <form
+              key={status}
+              action={setUserStatus.bind(null, user.id, status)}
+            >
+              <button
+                type="submit"
+                disabled={isProtectedAdmin || user.status === status}
+                className="rounded-full border-2 border-dashed border-(--leaf) px-3 py-1 text-xs font-bold disabled:opacity-40"
+              >
+                {statusLabels[status]}
+              </button>
+            </form>
+          ))}
+        </div>
+      </td>
+    </tr>
+  );
+};

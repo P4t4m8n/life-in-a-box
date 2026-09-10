@@ -1,4 +1,7 @@
-import { SimpleEditor } from "@/components/tiptap-templates/simple/simple-editor";
+// --- Components ---
+import { SimpleEditor } from "@/components/TipTap/tiptap-templates/simple/simple-editor";
+
+// --- Actions ---
 import { getPostForEdit } from "@/lib/actions/post-actions";
 import { getTags } from "@/lib/actions/tags-actions";
 

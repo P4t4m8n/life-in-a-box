@@ -1,4 +1,6 @@
 import type { DefaultSession } from "next-auth";
+
+// --- Prisma ---
 import type { Role, UserStatus } from "@/generated/prisma/enums";
 
 declare module "next-auth" {

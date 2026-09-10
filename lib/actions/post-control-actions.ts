@@ -2,11 +2,14 @@
 
 import { revalidatePath } from "next/cache";
 
+// --- Auth ---
 import { requireAdmin } from "@/lib/auth";
+
+// --- Prisma ---
 import { prisma } from "@/lib/prisma";
 import type { AccessLevel, PostStatus } from "@/generated/prisma/enums";
 
-interface AdminPostRow {
+export interface IAdminPostRow {
   id: string;
   title: string;
   status: PostStatus;
@@ -17,24 +20,37 @@ interface AdminPostRow {
   isRecommended: boolean;
 }
 
-export const getAdminPosts = async (): Promise<AdminPostRow[]> => {
+const ADMIN_PAGE_SIZE = 25;
+
+export const getAdminPosts = async (
+  page = 1,
+): Promise<{ posts: IAdminPostRow[]; totalCount: number; totalPages: number }> => {
   await requireAdmin();
 
-  const posts = await prisma.post.findMany({
-    orderBy: { createdAt: "desc" },
-    include: { mainPost: true, mainMemberPost: true, recomendedPost: true },
-  });
+  const [posts, totalCount] = await Promise.all([
+    prisma.post.findMany({
+      orderBy: { createdAt: "desc" },
+      include: { mainPost: true, mainMemberPost: true, recommendedPost: true },
+      take: ADMIN_PAGE_SIZE,
+      skip: (Math.max(1, page) - 1) * ADMIN_PAGE_SIZE,
+    }),
+    prisma.post.count(),
+  ]);
 
-  return posts.map((post) => ({
-    id: post.id,
-    title: post.title,
-    status: post.status,
-    accessLevel: post.accessLevel,
-    createdAt: post.createdAt,
-    isMain: post.mainPost !== null,
-    isMainMember: post.mainMemberPost !== null,
-    isRecommended: post.recomendedPost !== null,
-  }));
+  return {
+    posts: posts.map((post) => ({
+      id: post.id,
+      title: post.title,
+      status: post.status,
+      accessLevel: post.accessLevel,
+      createdAt: post.createdAt,
+      isMain: post.mainPost !== null,
+      isMainMember: post.mainMemberPost !== null,
+      isRecommended: post.recommendedPost !== null,
+    })),
+    totalCount,
+    totalPages: Math.max(1, Math.ceil(totalCount / ADMIN_PAGE_SIZE)),
+  };
 };
 
 export const setPostStatus = async (postId: string, status: PostStatus) => {
@@ -107,8 +123,8 @@ export const setRecommendedPost = async (postId: string) => {
 
   // Only one post can be the recommended post at a time.
   await prisma.$transaction([
-    prisma.recomendedPost.deleteMany({}),
-    prisma.recomendedPost.create({ data: { postId } }),
+    prisma.recommendedPost.deleteMany({}),
+    prisma.recommendedPost.create({ data: { postId } }),
   ]);
 
   revalidatePath("/admin/posts");
@@ -118,7 +134,22 @@ export const setRecommendedPost = async (postId: string) => {
 export const clearRecommendedPost = async () => {
   await requireAdmin();
 
-  await prisma.recomendedPost.deleteMany({});
+  await prisma.recommendedPost.deleteMany({});
+
+  revalidatePath("/admin/posts");
+  revalidatePath("/");
+};
+
+export const deletePost = async (postId: string) => {
+  await requireAdmin();
+
+  // clear pin rows first: they FK-reference the post with no cascade delete
+  await prisma.$transaction([
+    prisma.mainPost.deleteMany({ where: { postId } }),
+    prisma.mainMemberPost.deleteMany({ where: { postId } }),
+    prisma.recommendedPost.deleteMany({ where: { postId } }),
+    prisma.post.delete({ where: { id: postId } }),
+  ]);
 
   revalidatePath("/admin/posts");
   revalidatePath("/");

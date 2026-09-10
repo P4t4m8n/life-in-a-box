@@ -1,29 +1,35 @@
 import Image from "next/image";
 import Link from "next/link";
+
+// --- Icons ---
 import { ArrowLeft, Clock3, Lock, Pin } from "lucide-react";
 
+// --- Components ---
 import { StickerBadge } from "@/components/sticker-badge";
+
+// --- Actions ---
 import {
   getLatestMemberPost,
   getMainPost,
   getPublicPosts,
 } from "@/lib/actions/post-actions";
+
+// --- Types ---
 import { IPostDTO } from "@/types/app-types";
 
 export default async function Home() {
   const [mainPost, recentPosts, memberPost] = await Promise.all([
     getMainPost(),
-    getPublicPosts({ sort: "newest" }),
+    getPublicPosts({ sort: "newest", pageSize: 4 }),
     getLatestMemberPost(),
   ]);
-  console.log("🚀 ~ Home ~ memberPost:", memberPost)
 
   const otherPosts = recentPosts
     .filter((post) => post.id !== mainPost?.id)
     .slice(0, 3);
 
   return (
-    <div className=" w-full  bg-(--surface) bg-[linear-gradient(rgba(40,89,67,0.09)_1px,transparent_1px)] bg-size-[5000px_2.5rem]">
+    <div className=" w-full bg-(--surface) bg-[linear-gradient(rgba(40,89,67,0.09)_1px,transparent_1px)] bg-size-[5000px_2.5rem]">
       <HeroSection />
 
       {mainPost && <MainArticle {...mainPost} />}
@@ -59,15 +65,9 @@ const HeroSection = () => {
   );
 };
 
-const MainArticle = ({
-  title,
-  description,
-  readingTime,
-  imgSrc,
-  imgAlt,
-  id,
-  category,
-}: IPostDTO) => {
+const MainArticle = (post: IPostDTO) => {
+  const { title, description, readingTime, imgSrc, imgAlt, id, tags } = post;
+
   return (
     <section
       className="relative isolate flex items-end overflow-hidden bg-foreground lg:mx-auto"
@@ -84,13 +84,25 @@ const MainArticle = ({
       <div className="absolute inset-0 -z-1 bg-[linear-gradient(270deg,rgba(13,25,19,0.9),rgba(13,25,19,0.18)_72%)] max-[680px]:bg-[linear-gradient(0deg,rgba(13,25,19,0.94),rgba(13,25,19,0.12)_86%)]" />
 
       <div className="w-full px-4 py-8 text-white grid">
-        <div className="flex items-center justify-between lg:justify-center gap-2.5">
+        <div className="flex items-center justify-between lg:justify-start gap-2.5">
           <StickerBadge rotationDirection="clockwise" tone="coral">
             {readingTime ? `${readingTime} דקות קריאה` : "קריאה קצרה"}
           </StickerBadge>
-          <StickerBadge rotationDirection="counterclockwise" tone="coral">
-            {category ? `${category.name}` : "כללי"}
-          </StickerBadge>
+          <ul className="flex gap-2.5 flex-wrap justify-center">
+            {tags &&
+              tags.length > 0 &&
+              tags.map((tag, idx) => (
+                <StickerBadge
+                  rotationDirection={
+                    idx % 2 === 0 ? "clockwise" : "counterclockwise"
+                  }
+                  tone="coral"
+                  key={tag.name}
+                >
+                  {tag.name}
+                </StickerBadge>
+              ))}
+          </ul>
         </div>
         <h2
           className="my-4 rotate-1 font-serif text-[clamp(3rem,8vw,6.5rem)]  leading-[0.94] lg:leading-36 font-normal"
@@ -113,6 +125,7 @@ const MainArticle = ({
 };
 
 const cardRotations = ["-rotate-2", "rotate-2", "-rotate-1"];
+
 const RecentlyPublished = ({ posts }: { posts: IPostDTO[] }) => {
   if (posts.length === 0) return null;
 
@@ -140,13 +153,13 @@ const RecentlyPublished = ({ posts }: { posts: IPostDTO[] }) => {
         {posts.map((post, index) => (
           <article
             key={post.id}
-            className={`group relative min-w-0   overflow-hidden rounded-sm border-2 border-white bg-white p-3 shadow-md transition-transform duration-300 hover:rotate-0 hover:shadow-lg ${
+            className={`group relative min-w-0   overflow-hidden rounded-sm border-2 border-(--surface) bg-(--surface) p-3 shadow-md transition-transform duration-300 hover:rotate-0 hover:shadow-lg ${
               cardRotations[index % cardRotations.length]
             }`}
           >
             <Pin
               aria-hidden="true"
-              className={`absolute top-0 z-10 text-black f drop-shadow ${
+              className={`absolute top-0 z-10 text-foreground f drop-shadow ${
                 index % 2 === 0
                   ? "right-4 translate-x-1/2 rotate-45"
                   : " left-4 -translate-x-1/2 -rotate-45"
@@ -196,8 +209,7 @@ const PrivateSection = ({
 }) => {
   if (!post) return null;
 
-  const { title, description } = post;
-  const loginHref = `/login?callbackUrl=${encodeURIComponent(`/posts/${post.id}`)}`;
+  const { title, description, imgSrc, imgAlt } = post;
 
   return (
     <section
@@ -205,8 +217,16 @@ const PrivateSection = ({
       aria-labelledby="recommended-title"
     >
       <div className="mx-auto w-[calc(100%-2rem)] max-w-304">
-        <div className="relative -rotate-1 rounded-sm border-2 border-dashed border-(--leaf)/50 bg-white p-[clamp(1.5rem,4vw,3rem)] shadow-lg">
-          <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-8 max-[42.5rem]:grid-cols-1">
+        <div className="relative -rotate-1 overflow-hidden rounded-sm border-2 border-dashed border-(--leaf)/50 p-[clamp(1.5rem,4vw,3rem)] shadow-lg">
+          <Image
+            className="-z-2 object-cover"
+            src={imgSrc || "/open-book.jpg"}
+            alt={imgAlt || title}
+            fill
+            sizes="(max-width: 900px) 100vw, 76rem"
+          />
+          <div className="absolute inset-0 -z-1 bg-(--surface)/90" />
+          <div className="grid  items-center gap-8 max-[42.5rem]:grid-cols-1">
             <Lock className="text-(--leaf) " size={34} aria-hidden="true" />
             <div>
               <StickerBadge tone="leaf">לחברים בלבד</StickerBadge>
@@ -214,30 +234,21 @@ const PrivateSection = ({
                 className="my-4 font-serif text-[clamp(2.4rem,5vw,4.5rem)] leading-none font-normal"
                 id="recommended-title"
               >
-                {title}{" "}
+                {title}
               </h2>
               <p className="mb-0 max-w-2xl leading-[1.7] text-foreground">
                 {description || "התחברו כדי לקרוא את הפוסט הזה"}
               </p>
             </div>
-            <div className="grid gap-2 max-[680px]:justify-self-start">
-              <Link
-                className="inline-flex min-h-11 items-center justify-center gap-2.5 rounded-sm bg-(--leaf) px-5 font-extrabold text-white"
-                href={loginHref}
-              >
-                התחברות
-              </Link>
-              <Link
-                className="inline-flex min-h-11 items-center justify-center gap-2.5 font-extrabold text-(--leaf) underline decoration-2 underline-offset-5"
-                href={loginHref}
-              >
-                הרשמה <ArrowLeft aria-hidden="true" size={17} />
-              </Link>
-            </div>
+            <Link href={`/posts/${post.id}`} className="">
+              <span className="mt-5 inline-flex items-center gap-2.5 text-sm font-extrabold text-[#676b68]">
+                המשך קריאה לחברים בלבד, הרשם עכשיו
+                <ArrowLeft aria-hidden="true" size={18} />
+              </span>
+            </Link>
           </div>
         </div>
       </div>
     </section>
   );
 };
-

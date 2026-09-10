@@ -7,7 +7,7 @@ export function PostsFilterBar({ tags }: { tags: string[] }) {
   const searchParams = useSearchParams();
 
   const inputsClassName =
-    "rounded-sm border-2 border-(--line) bg-white p-2  h-12 text-sm transition-colors focus:outline-none focus:border-blue-500";
+    "rounded-sm border-2 border-(--line) bg-(--surface) p-2  h-12 text-sm transition-colors focus:outline-none focus:border-blue-500";
 
   return (
     <Form action="/posts" className="grid lg:grid-cols-2 gap-2 lg:gap-32 pb-8 ">

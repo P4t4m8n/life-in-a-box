@@ -2,9 +2,14 @@ import Image from "next/image";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 
+// --- Auth ---
 import { authOptions } from "@/lib/auth";
+
+// --- Components ---
 import { StickerBadge } from "@/components/sticker-badge";
 import { SignOutButton } from "@/components/sign-out-button";
+
+// --- Prisma ---
 import { Role, UserStatus } from "@/generated/prisma/enums";
 
 const statusLabels: Record<UserStatus, string> = {
@@ -37,7 +42,7 @@ export default async function ProfilePage() {
 
   return (
     <div className="mx-auto grid max-w-lg gap-6 px-4 py-16 text-center">
-      <div className="rotate-1 rounded-sm border-2 border-dashed border-(--line) bg-white px-8 py-10 shadow-md">
+      <div className="rotate-1 rounded-sm border-2 border-dashed border-(--line) bg-(--surface) px-8 py-10 shadow-md">
         {user.image && (
           <Image
             src={user.image}
@@ -63,7 +68,7 @@ export default async function ProfilePage() {
 
         {user.status === UserStatus.PENDING && (
           <p className="mx-auto mt-4 max-w-sm leading-[1.7] text-(--muted)">
-            החשבון שלך ממתין לאישור מנהל. נעדכן אותך ברגע שהחשבון יאושר.
+            ממתין לאישור, נעדכן שהקופסא תתפנה{" "}
           </p>
         )}
 

@@ -5,7 +5,10 @@ import { notFound, redirect } from "next/navigation";
 import { ArrowRight, Clock3 } from "lucide-react";
 import { renderToReactElement } from "@tiptap/static-renderer/pm/react";
 
+// --- Actions ---
 import { getPostById } from "@/lib/actions/post-actions";
+
+// --- Lib ---
 import { contentExtensions } from "@/lib/tiptap-content-extensions";
 
 export async function generateMetadata({
@@ -41,7 +44,7 @@ export default async function ArticlePage({
   const { title, readingTime, imgSrc, imgAlt, content } = result.post;
 
   return (
-    <article className="p-4 w-full grid gap-4">
+    <article className="mx-auto w-full max-w-3xl grid gap-4 p-4">
       <Link
         href="/"
         className="inline-flex items-center gap-2 text-sm font-extrabold "
@@ -63,7 +66,7 @@ export default async function ArticlePage({
           src={imgSrc || "/open-book.jpg"}
           alt={imgAlt || title}
           fill
-          sizes="(max-width: 48rem) 100vw, 44rem"
+          sizes="(max-width: 48rem) 100vw, 30rem"
           priority
         />
       </div>

@@ -8,7 +8,7 @@ import { Typography } from "@tiptap/extension-typography";
 import { Highlight } from "@tiptap/extension-highlight";
 import { Subscript } from "@tiptap/extension-subscript";
 import { Superscript } from "@tiptap/extension-superscript";
-import { HorizontalRule } from "@/components/tiptap-node/horizontal-rule-node/horizontal-rule-node-extension";
+import { HorizontalRule } from "@/components/TipTap/tiptap-node/horizontal-rule-node/horizontal-rule-node-extension";
 
 export const contentExtensions = [
   StarterKit.configure({

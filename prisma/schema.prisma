@@ -38,23 +38,26 @@ enum UserStatus {
 }
 
 model Post {
-  id             String          @id @default(cuid())
-  title          String          @default("Untitled")
-  content        Json
-  description    String?
-  readingTime    String?
-  imgSrc         String?
-  imgAlt         String?
-  status         PostStatus      @default(DRAFT)
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
-  tags           Tag[]
-  categoryId     String?
-  category       Category?       @relation(fields: [categoryId], references: [id])
-  accessLevel    AccessLevel     @default(PUBLIC)
-  mainPost       MainPost?
-  mainMemberPost MainMemberPost?
-  recomendedPost RecomendedPost?
+  id              String           @id @default(cuid())
+  title           String           @default("Untitled")
+  content         Json
+  description     String?
+  readingTime     String?
+  imgSrc          String?
+  imgAlt          String?
+  status          PostStatus       @default(DRAFT)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  tags            Tag[]
+  categoryId      String?
+  category        Category?        @relation(fields: [categoryId], references: [id])
+  accessLevel     AccessLevel      @default(PUBLIC)
+  mainPost        MainPost?
+  mainMemberPost  MainMemberPost?
+  recommendedPost RecommendedPost?
+
+  @@index([status, accessLevel])
+  @@index([createdAt])
 }
 
 model Tag {
@@ -90,12 +93,21 @@ model MainMemberPost {
   updatedAt DateTime @updatedAt
 }
 
-model RecomendedPost {
+model RecommendedPost {
   id        String   @id @default(cuid())
   postId    String   @unique
   post      Post     @relation(fields: [postId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// Backing store for the request rate limiter. A DB-backed store is required
+// because in-memory counters don't survive across serverless cold starts or
+// multiple concurrent instances.
+model RateLimitBucket {
+  key     String   @id
+  count   Int
+  resetAt DateTime
 }
 
 model User {

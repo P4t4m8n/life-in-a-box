@@ -2,8 +2,13 @@
 
 import { getServerSession } from "next-auth";
 
+// --- Types ---
 import { IPostDTO, IPostEditDTO, IPublicPostsQuery } from "@/types/app-types";
+
+// --- Auth ---
 import { authOptions, requireAdmin } from "@/lib/auth";
+
+// --- Prisma ---
 import { prisma } from "@/lib/prisma";
 import {
   AccessLevel,
@@ -145,7 +150,6 @@ export const getLatestMemberPost = async () => {
       },
     },
   });
-  console.log("🚀 ~ getLatestMemberPost ~ pinned:", pinned)
 
   if (
     pinned &&
@@ -180,41 +184,62 @@ export const getPublishedPostsForSitemap = async (): Promise<
   });
 };
 
-export const getPublicPosts = async (
-  query: IPublicPostsQuery = {},
-): Promise<IPostDTO[]> => {
-  const { search, tag, sort = "newest" } = query;
+const buildPublicPostsWhere = async (query: IPublicPostsQuery) => {
+  const { search, tag } = query;
 
   const session = await getServerSession(authOptions);
   const viewer = session?.user;
-  const isAdmin = viewer?.role === Role.ADMIN;
 
   const visibleAccessLevels: AccessLevel[] =
     viewer?.status === UserStatus.APPROVED
       ? [AccessLevel.PUBLIC, AccessLevel.USER]
       : [AccessLevel.PUBLIC];
 
+  return {
+    AND: [
+      {
+        status: PostStatus.PUBLISHED,
+        accessLevel: { in: visibleAccessLevels },
+      },
+      search
+        ? {
+            OR: [
+              { title: { contains: search, mode: "insensitive" as const } },
+              {
+                description: {
+                  contains: search,
+                  mode: "insensitive" as const,
+                },
+              },
+            ],
+          }
+        : {},
+      tag ? { tags: { some: { name: tag } } } : {},
+    ],
+  };
+};
+
+export const getPublicPosts = async (
+  query: IPublicPostsQuery = {},
+): Promise<IPostDTO[]> => {
+  const { sort = "newest", page, pageSize } = query;
+
+  const where = await buildPublicPostsWhere(query);
+
   return prisma.post.findMany({
-    where: {
-      AND: [
-        isAdmin
-          ? {}
-          : {
-              status: PostStatus.PUBLISHED,
-              accessLevel: { in: visibleAccessLevels },
-            },
-        search
-          ? {
-              OR: [
-                { title: { contains: search, mode: "insensitive" } },
-                { description: { contains: search, mode: "insensitive" } },
-              ],
-            }
-          : {},
-        tag ? { tags: { some: { name: tag } } } : {},
-      ],
-    },
+    where,
     include: { tags: true },
     orderBy: { createdAt: sort === "oldest" ? "asc" : "desc" },
+    ...(pageSize
+      ? { take: pageSize, skip: ((page ?? 1) - 1) * pageSize }
+      : {}),
   });
+};
+
+// Total count matching the same filters as getPublicPosts, for pagination controls.
+export const countPublicPosts = async (
+  query: IPublicPostsQuery = {},
+): Promise<number> => {
+  const where = await buildPublicPostsWhere(query);
+  return prisma.post.count({ where });
 };

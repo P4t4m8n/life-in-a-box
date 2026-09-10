@@ -1,16 +1,13 @@
 "use server";
 
-import { getServerSession } from "next-auth";
 import { revalidatePath } from "next/cache";
 
-import { authOptions, requireAdmin } from "@/lib/auth";
+// --- Auth ---
+import { requireAdmin } from "@/lib/auth";
+
+// --- Prisma ---
 import { prisma } from "@/lib/prisma";
 import type { UserStatus } from "@/generated/prisma/enums";
-
-export const getCurrentUser = async () => {
-  const session = await getServerSession(authOptions);
-  return session?.user ?? null;
-};
 
 export const getAllUsers = async () => {
   await requireAdmin();

@@ -1,9 +1,11 @@
 "use client"
 
 import type { Editor } from "@tiptap/react"
+import { useEffect } from "react"
+
+// --- Hooks ---
 import { useWindowSize } from "@/hooks/use-window-size"
 import { useBodyRect } from "@/hooks/use-element-rect"
-import { useEffect } from "react"
 
 export interface CursorVisibilityOptions {
   /**

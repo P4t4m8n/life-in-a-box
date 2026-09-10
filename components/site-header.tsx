@@ -1,6 +1,10 @@
 import { getServerSession } from "next-auth";
 import Link from "next/link";
+
+// --- Auth ---
 import { authOptions } from "@/lib/auth";
+
+// --- Components ---
 import { SignOutButton } from "./sign-out-button";
 import { UserAvatar } from "./user-avatar";
 import { LogoSVG } from "./Icons/LogoSVG";

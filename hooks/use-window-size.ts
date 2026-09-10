@@ -1,6 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
+
+// --- Hooks ---
 import { useThrottledCallback } from "@/hooks/use-throttled-callback"
 
 export interface WindowSizeState {

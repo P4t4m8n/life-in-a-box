@@ -6,8 +6,6 @@ export interface IPostDTO extends Omit<IPostEditDTO, "tags"> {
   updatedAt: Date;
   tags: ITagDTO[];
   accessLevel: string;
-  mainPost?: string;
-  recomendedPost?: string;
   category?: ICategoryDTO | null;
 }
 
@@ -40,4 +38,6 @@ export interface IPublicPostsQuery {
   search?: string;
   tag?: string;
   sort?: "newest" | "oldest";
+  page?: number;
+  pageSize?: number;
 }
