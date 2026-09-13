@@ -4,6 +4,16 @@ import { useEffect, useState } from "react"
 
 type BreakpointMode = "min" | "max"
 
+function getQuery(mode: BreakpointMode, breakpoint: number) {
+  return mode === "min"
+    ? `(min-width: ${breakpoint}px)`
+    : `(max-width: ${breakpoint - 1}px)`
+}
+
+function getMatches(query: string) {
+  return typeof window === "undefined" ? null : window.matchMedia(query).matches
+}
+
 /**
  * Hook to detect whether the current viewport matches a given breakpoint rule.
  * Example:
@@ -14,24 +24,22 @@ export function useIsBreakpoint(
   mode: BreakpointMode = "max",
   breakpoint = 768
 ) {
-  const [matches, setMatches] = useState<boolean | undefined>(undefined)
+  const query = getQuery(mode, breakpoint)
+  const [trackedQuery, setTrackedQuery] = useState(query)
+  const [matches, setMatches] = useState<boolean | null>(() => getMatches(query))
+
+  // Resync state during render when mode/breakpoint change, instead of in an effect
+  if (query !== trackedQuery) {
+    setTrackedQuery(query)
+    setMatches(getMatches(query))
+  }
 
   useEffect(() => {
-    const query =
-      mode === "min"
-        ? `(min-width: ${breakpoint}px)`
-        : `(max-width: ${breakpoint - 1}px)`
-
     const mql = window.matchMedia(query)
     const onChange = (e: MediaQueryListEvent) => setMatches(e.matches)
-
-    // Set initial value
-    setMatches(mql.matches)
-
-    // Add listener
     mql.addEventListener("change", onChange)
     return () => mql.removeEventListener("change", onChange)
-  }, [mode, breakpoint])
+  }, [query])
 
   return !!matches
 }

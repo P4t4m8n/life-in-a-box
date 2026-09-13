@@ -221,7 +221,7 @@ export function SimpleEditor({
   initialPost?: IPostEditDTO
 }) {
   const isMobile = useIsBreakpoint()
-  const { height } = useWindowSize()
+  useWindowSize()
   const [mobileView, setMobileView] = useState<"main" | "highlighter" | "link">(
     "main"
   )
@@ -328,7 +328,7 @@ export function SimpleEditor({
 
   const toolbarRect = useElementRect({ element: toolbarRef })
 
-  const rect = useCursorVisibility({
+  useCursorVisibility({
     editor,
     overlayHeight: toolbarRect.height,
   })
