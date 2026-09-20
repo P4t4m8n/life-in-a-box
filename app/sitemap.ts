@@ -5,6 +5,9 @@ import { getPublishedPostsForSitemap } from "@/lib/actions/post-actions";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
+// Otherwise this is prerendered once at build time and never picks up new posts.
+export const revalidate = 3600;
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const posts = await getPublishedPostsForSitemap();
 

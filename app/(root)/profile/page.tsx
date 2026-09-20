@@ -1,9 +1,8 @@
 import Image from "next/image";
-import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 
 // --- Auth ---
-import { authOptions } from "@/lib/auth";
+import { getSession } from "@/lib/auth";
 
 // --- Components ---
 import { StickerBadge } from "@/components/sticker-badge";
@@ -32,7 +31,7 @@ const roleLabels: Record<Role, string> = {
 };
 
 export default async function ProfilePage() {
-  const session = await getServerSession(authOptions);
+  const session = await getSession();
 
   if (!session) {
     redirect("/login?callbackUrl=/profile");

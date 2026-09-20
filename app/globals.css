@@ -44,11 +44,6 @@
 }
 html {
   scroll-behavior: smooth;
-  scrollbar-gutter: stable;
-
-  @media (min-width: 759px) {
-    scrollbar-gutter: auto;
-  }
 }
 
 body {

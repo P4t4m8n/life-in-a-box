@@ -1,3 +1,4 @@
+import { cache, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -6,6 +7,7 @@ import { ArrowLeft, Clock3, Lock, Pin } from "lucide-react";
 
 // --- Components ---
 import { StickerBadge } from "@/components/sticker-badge";
+import { PostCardSkeleton, Skeleton } from "@/components/skeleton";
 
 // --- Actions ---
 import {
@@ -17,30 +19,54 @@ import {
 // --- Types ---
 import { IPostDTO } from "@/types/app-types";
 
-export default async function Home() {
-  const [mainPost, recentPosts, memberPost] = await Promise.all([
-    getMainPost(),
+// Both the featured and the recent section need the main post (the latter to exclude
+// it); cache() lets each stream independently while only hitting the DB once.
+const getMainPostOnce = cache(getMainPost);
+
+export default function Home() {
+  return (
+    <div className=" w-full bg-(--surface) bg-[linear-gradient(rgba(40,89,67,0.09)_1px,transparent_1px)] bg-size-[5000px_2.5rem]">
+      <HeroSection />
+
+      <Suspense fallback={<MainArticleSkeleton />}>
+        <MainArticleSection />
+      </Suspense>
+
+      <Suspense fallback={<RecentlyPublishedSkeleton />}>
+        <RecentlyPublishedSection />
+      </Suspense>
+
+      {/* <PopularSection /> */}
+
+      <Suspense fallback={<PrivateSectionSkeleton />}>
+        <PrivateSectionLoader />
+      </Suspense>
+    </div>
+  );
+}
+
+async function MainArticleSection() {
+  const mainPost = await getMainPostOnce();
+  if (!mainPost) return null;
+  return <MainArticle {...mainPost} />;
+}
+
+async function RecentlyPublishedSection() {
+  const [mainPost, recentPosts] = await Promise.all([
+    getMainPostOnce(),
     getPublicPosts({ sort: "newest", pageSize: 4 }),
-    getLatestMemberPost(),
   ]);
 
   const otherPosts = recentPosts
     .filter((post) => post.id !== mainPost?.id)
     .slice(0, 3);
 
-  return (
-    <div className=" w-full bg-(--surface) bg-[linear-gradient(rgba(40,89,67,0.09)_1px,transparent_1px)] bg-size-[5000px_2.5rem]">
-      <HeroSection />
+  return <RecentlyPublished posts={otherPosts} />;
+}
 
-      {mainPost && <MainArticle {...mainPost} />}
-
-      <RecentlyPublished posts={otherPosts} />
-
-      {/* <PopularSection /> */}
-
-      <PrivateSection post={memberPost} />
-    </div>
-  );
+async function PrivateSectionLoader() {
+  const post = await getLatestMemberPost();
+  return <PrivateSection post={post} />;
 }
 
 const HeroSection = () => {
@@ -125,6 +151,65 @@ const MainArticle = (post: IPostDTO) => {
 };
 
 const cardRotations = ["-rotate-2", "rotate-2", "-rotate-1"];
+
+// Mirrors MainArticle's padding and block sizes so the hero area doesn't jump on resolve.
+const MainArticleSkeleton = () => (
+  <section
+    aria-busy="true"
+    className="relative isolate flex items-end overflow-hidden bg-foreground lg:mx-auto"
+  >
+    <div className="w-full px-4 py-8 grid">
+      <div className="flex items-center gap-2.5">
+        <Skeleton className="h-7 w-28 bg-white/20" />
+        <Skeleton className="h-7 w-20 bg-white/20" />
+      </div>
+      <Skeleton className="my-4 h-[clamp(3rem,8vw,6.5rem)] w-4/5 bg-white/20" />
+      <Skeleton className="h-5 w-full max-w-2xl bg-white/20" />
+      <Skeleton className="mt-2 h-5 w-2/3 max-w-xl bg-white/20" />
+      <Skeleton className="mt-5 h-5 w-24 bg-white/20" />
+    </div>
+  </section>
+);
+
+const RecentlyPublishedSkeleton = () => (
+  <section
+    aria-busy="true"
+    className="border-b-2 border-dashed border-(--line) py-[clamp(4rem,8vw,7rem)] lg:px-8"
+  >
+    <div className="mb-10 flex items-end justify-between gap-8 lg:grid px-8">
+      <div className="grid gap-4">
+        <StickerBadge tone="leaf">רשימות אחרונות</StickerBadge>
+        <h2 className="-rotate-1 font-serif text-[clamp(2.4rem,5vw,4.5rem)] leading-none font-normal">
+          פורסם לאחרונה
+        </h2>
+      </div>
+      <p className="m-0 max-w-sm leading-[1.7] text-(--muted) max-[680px]:mt-4">
+        שטויות שפירסמתי לאחרונה
+      </p>
+    </div>
+    <div className="grid lg:grid-cols-3 px-4 lg:px-0 gap-6 grid-cols-1 items-center justify-center">
+      {cardRotations.map((rotation) => (
+        <PostCardSkeleton key={rotation} className={rotation} />
+      ))}
+    </div>
+  </section>
+);
+
+const PrivateSectionSkeleton = () => (
+  <section aria-busy="true" className="bg-(--sky) py-[clamp(4rem,8vw,7rem)]">
+    <div className="mx-auto w-[calc(100%-2rem)] max-w-304">
+      <div className="-rotate-1 rounded-sm border-2 border-dashed border-(--leaf)/50 p-[clamp(1.5rem,4vw,3rem)] shadow-lg grid gap-8">
+        <Skeleton className="size-8" />
+        <div className="grid gap-4">
+          <Skeleton className="h-7 w-28" />
+          <Skeleton className="h-[clamp(2.4rem,5vw,4.5rem)] w-3/4" />
+          <Skeleton className="h-5 w-full max-w-2xl" />
+        </div>
+        <Skeleton className="h-5 w-56" />
+      </div>
+    </div>
+  </section>
+);
 
 const RecentlyPublished = ({ posts }: { posts: IPostDTO[] }) => {
   if (posts.length === 0) return null;

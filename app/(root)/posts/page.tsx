@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Clock3 } from "lucide-react";
@@ -6,6 +7,7 @@ import type { Metadata } from "next";
 // --- Components ---
 import { StickerBadge } from "@/components/sticker-badge";
 import { PostsFilterBar } from "@/components/posts-filter-bar";
+import { PostCardSkeleton } from "@/components/skeleton";
 
 // --- Actions ---
 import { countPublicPosts, getPublicPosts } from "@/lib/actions/post-actions";
@@ -21,29 +23,20 @@ export const metadata: Metadata = {
 
 const PAGE_SIZE = 12;
 
+type PostsQuery = {
+  search?: string;
+  tag?: string;
+  sort: "newest" | "oldest";
+  page: number;
+};
+
 export default async function PostsPage({ searchParams }: PageProps<"/posts">) {
   const params = await searchParams;
-  const search = typeof params.q === "string" ? params.q : undefined;
-  const tag = typeof params.tag === "string" ? params.tag : undefined;
-  const sort = params.sort === "oldest" ? "oldest" : "newest";
-  const page = Math.max(1, Number(params.page) || 1);
-
-  const [posts, totalCount, tags] = await Promise.all([
-    getPublicPosts({ search, tag, sort, page, pageSize: PAGE_SIZE }),
-    countPublicPosts({ search, tag, sort }),
-    getTags(),
-  ]);
-
-  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
-
-  const pageHref = (targetPage: number) => {
-    const query = new URLSearchParams();
-    if (search) query.set("q", search);
-    if (tag) query.set("tag", tag);
-    if (sort !== "newest") query.set("sort", sort);
-    if (targetPage > 1) query.set("page", String(targetPage));
-    const qs = query.toString();
-    return qs ? `/posts?${qs}` : "/posts";
+  const query: PostsQuery = {
+    search: typeof params.q === "string" ? params.q : undefined,
+    tag: typeof params.tag === "string" ? params.tag : undefined,
+    sort: params.sort === "oldest" ? "oldest" : "newest",
+    page: Math.max(1, Number(params.page) || 1),
   };
 
   return (
@@ -53,23 +46,70 @@ export default async function PostsPage({ searchParams }: PageProps<"/posts">) {
         כול השטויות במקום אחד
       </h1>
 
-      <PostsFilterBar tags={tags.map((t) => t.name)} />
+      <Suspense fallback={<PostsFilterBar tags={[]} />}>
+        <FilterBar />
+      </Suspense>
 
-      {posts.length === 0 ? (
-        <p className="py-16 text-center text-(--muted)">
-          לא נמצאו רשימות מתאימות.
-        </p>
-      ) : (
-        <>
-          <PostList posts={posts} />
-          {totalPages > 1 && (
-            <Pagination page={page} totalPages={totalPages} pageHref={pageHref} />
-          )}
-        </>
-      )}
+      {/* Keyed on the query so a filter change shows the skeleton instead of stale cards. */}
+      <Suspense key={JSON.stringify(query)} fallback={<PostListSkeleton />}>
+        <PostResults query={query} />
+      </Suspense>
     </div>
   );
 }
+
+async function FilterBar() {
+  const tags = await getTags();
+  return <PostsFilterBar tags={tags.map((t) => t.name)} />;
+}
+
+async function PostResults({ query }: { query: PostsQuery }) {
+  const { search, tag, sort, page } = query;
+
+  const [posts, totalCount] = await Promise.all([
+    getPublicPosts({ search, tag, sort, page, pageSize: PAGE_SIZE }),
+    countPublicPosts({ search, tag, sort }),
+  ]);
+
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+
+  const pageHref = (targetPage: number) => {
+    const q = new URLSearchParams();
+    if (search) q.set("q", search);
+    if (tag) q.set("tag", tag);
+    if (sort !== "newest") q.set("sort", sort);
+    if (targetPage > 1) q.set("page", String(targetPage));
+    const qs = q.toString();
+    return qs ? `/posts?${qs}` : "/posts";
+  };
+
+  if (posts.length === 0) {
+    return (
+      <p className="py-16 text-center text-(--muted)">
+        לא נמצאו רשימות מתאימות.
+      </p>
+    );
+  }
+
+  return (
+    <>
+      <PostList posts={posts} />
+      {totalPages > 1 && (
+        <Pagination page={page} totalPages={totalPages} pageHref={pageHref} />
+      )}
+    </>
+  );
+}
+
+const PostListSkeleton = () => (
+  <ul aria-busy="true" className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+    {Array.from({ length: 6 }, (_, idx) => (
+      <li key={idx} className={cardRotations[idx % cardRotations.length]}>
+        <PostCardSkeleton />
+      </li>
+    ))}
+  </ul>
+);
 
 const Pagination = ({
   page,

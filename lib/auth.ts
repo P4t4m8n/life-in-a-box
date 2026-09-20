@@ -1,3 +1,6 @@
+// --- React ---
+import { cache } from "react";
+
 // --- NextAuth ---
 import { getServerSession } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
@@ -7,11 +10,14 @@ import type { NextAuthOptions, Session, User } from "next-auth";
 import type { AdapterUser } from "next-auth/adapters";
 import type { JWT } from "next-auth/jwt";
 
+// --- Lib ---
+import { env } from "@/lib/env";
+
 // --- Prisma ---
 import { prisma } from "@/lib/prisma";
 import { Role, UserStatus } from "@/generated/prisma/enums";
 
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+const ADMIN_EMAIL = env.ADMIN_EMAIL;
 
 const signInCallback = async ({ user }: { user: User | AdapterUser }) => {
   if (!user.email) return false;
@@ -89,11 +95,12 @@ const sessionCallback = async ({
 export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      clientId: env.GOOGLE_CLIENT_ID,
+      clientSecret: env.GOOGLE_CLIENT_SECRET,
     }),
   ],
   session: { strategy: "jwt" },
+  secret: env.NEXTAUTH_SECRET,
   pages: {
     signIn: "/login",
   },
@@ -104,9 +111,13 @@ export const authOptions: NextAuthOptions = {
   },
 };
 
+// Deduped per request: the header, the page, and every server action that reads the
+// session share one JWT decode + one User lookup instead of repeating them.
+export const getSession = cache(() => getServerSession(authOptions));
+
 // Defense-in-depth guard for server actions, in case route-level protection is ever bypassed.
 export async function requireAdmin() {
-  const session = await getServerSession(authOptions);
+  const session = await getSession();
 
   if (!session?.user || session.user.role !== Role.ADMIN) {
     throw new Error("Unauthorized");

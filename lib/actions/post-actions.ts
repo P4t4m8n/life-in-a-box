@@ -1,12 +1,10 @@
 "use server";
 
-import { getServerSession } from "next-auth";
-
 // --- Types ---
 import { IPostDTO, IPostEditDTO, IPublicPostsQuery } from "@/types/app-types";
 
 // --- Auth ---
-import { authOptions, requireAdmin } from "@/lib/auth";
+import { getSession, requireAdmin } from "@/lib/auth";
 
 // --- Prisma ---
 import { prisma } from "@/lib/prisma";
@@ -17,8 +15,24 @@ import {
   UserStatus,
 } from "@/generated/prisma/enums";
 
+// next/image throws at render time for hosts outside next.config remotePatterns,
+// so a bad URL here would 500 the post page and the homepage hero.
+const isAllowedImageSrc = (src: string) => {
+  try {
+    const url = new URL(src);
+    return url.protocol === "https:" && url.hostname === "res.cloudinary.com";
+  } catch {
+    return false;
+  }
+};
+
 export const savePost = async (input: IPostEditDTO): Promise<string> => {
   await requireAdmin();
+
+  const imgSrc = input.imgSrc?.trim() || null;
+  if (imgSrc && !isAllowedImageSrc(imgSrc)) {
+    throw new Error("Cover image must be a Cloudinary URL (https://res.cloudinary.com/...)");
+  }
 
   const connectOrCreate = input.tags
     .map((name) => name.trim())
@@ -32,7 +46,7 @@ export const savePost = async (input: IPostEditDTO): Promise<string> => {
     title: input.title || "Untitled",
     description: input.description || null,
     readingTime: input.readingTime || null,
-    imgSrc: input.imgSrc || null,
+    imgSrc,
     imgAlt: input.imgAlt || null,
     content: input.content as object,
   };
@@ -112,7 +126,7 @@ export const getPostById = async (id: string): Promise<PostAccessResult> => {
 
   if (!post) return { status: "not-found" };
 
-  const session = await getServerSession(authOptions);
+  const session = await getSession();
   const viewer = session?.user;
 
   // Admins can preview any post regardless of status/access level.
@@ -187,7 +201,7 @@ export const getPublishedPostsForSitemap = async (): Promise<
 const buildPublicPostsWhere = async (query: IPublicPostsQuery) => {
   const { search, tag } = query;
 
-  const session = await getServerSession(authOptions);
+  const session = await getSession();
   const viewer = session?.user;
 
   const visibleAccessLevels: AccessLevel[] =

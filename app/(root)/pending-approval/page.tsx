@@ -1,15 +1,14 @@
-import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 
 // --- Auth ---
-import { authOptions } from "@/lib/auth";
+import { getSession } from "@/lib/auth";
 
 // --- Components ---
 import { StickerBadge } from "@/components/sticker-badge";
 import { SignOutButton } from "@/components/sign-out-button";
 
 export default async function PendingApprovalPage() {
-  const session = await getServerSession(authOptions);
+  const session = await getSession();
 
   if (!session) {
     redirect("/login");

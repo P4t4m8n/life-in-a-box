@@ -20,10 +20,21 @@ export function MobileNav({
       if (e.key === "Escape") setOpen(false);
     };
     document.addEventListener("keydown", onKeyDown);
-    document.body.style.overflow = "hidden";
+
+    // Hiding overflow removes a classic scrollbar and widens the page, which shifts the
+    // sticky header. Reserve that width (0 on overlay-scrollbar devices) while locked.
+    // const scrollbarWidth =
+    //   window.innerWidth - document.documentElement.clientWidth;
+    // const { overflow, paddingInlineEnd } = document.body.style;
+    // document.body.style.overflow = "hidden";
+    // if (scrollbarWidth > 0) {
+    //   document.body.style.paddingInlineEnd = `${scrollbarWidth}px`;
+    // }
+
     return () => {
       document.removeEventListener("keydown", onKeyDown);
-      document.body.style.overflow = "";
+      // document.body.style.overflow = overflow;
+      // document.body.style.paddingInlineEnd = paddingInlineEnd;
     };
   }, [open]);
 
@@ -53,7 +64,7 @@ export function MobileNav({
         aria-label={open ? "סגירת תפריט" : "פתיחת תפריט"}
         onClick={() => setOpen((value) => !value)}
       >
-        <AnimatedHamburger open={open} className="w-6 h-6 stroke-black" />
+        <AnimatedHamburger open={open} className="w-6 h-6 stroke-current" />
       </button>
 
       <ul className="hidden gap-2 md:flex md:flex-row items-center ">
@@ -69,12 +80,12 @@ export function MobileNav({
         onClick={(e) => {
           if (e.target === e.currentTarget) setOpen(false);
         }}
-        className={`fixed left-0 top-20.5 z-40 h-[calc(100svh-5.125rem)] w-0 transition-all border-0 bg-(--surface) p-6
-           duration-300 ease-out lg:hidden ${
-            open
-              ? "  pointer-events-auto w-full"
-              : " -right-12  pointer-events-none w-0 overflow-hidden"
-          }`}
+        className={`fixed inset-x-0 top-20.5 z-40 h-[calc(100svh-5.125rem)] bg-(--surface) p-6 
+  transition-transform duration-300 ease-out md:hidden ${
+    open
+      ? "translate-x-0 pointer-events-auto"
+      : "-translate-x-full pointer-events-none "
+  }`}
       >
         <ul
           id="mobile-navigation"

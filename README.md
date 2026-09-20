@@ -58,8 +58,12 @@ e2e/              Playwright tests, DB seed/reset helpers, auth-bypass helper
 
 ## Security notes
 
-- **Headers**: `next.config.ts` sets a CSP, `X-Frame-Options`, `Referrer-Policy`,
-  `Permissions-Policy`, and HSTS on every route.
+- **Headers**: `next.config.ts` sets a CSP, `X-Frame-Options`, `X-Content-Type-Options`,
+  `Referrer-Policy`, and `Permissions-Policy` on every route. HSTS is added by Vercel itself.
+- **Migrations**: `npm run build` only runs `next build`. Schema changes are applied to the
+  live database manually (`npx prisma migrate deploy` with `DIRECT_URL` pointed at prod),
+  so preview builds can never migrate production.
+- **Env validation**: `lib/env.ts` throws at startup if a required variable is missing.
 - **Rate limiting**: the contact form is capped at 5 submissions/hour per IP via
   `lib/rate-limit.ts`. Backed by a `RateLimitBucket` Postgres table (single atomic
   upsert per check) rather than an in-memory counter, since the app runs on
@@ -87,6 +91,8 @@ e2e/              Playwright tests, DB seed/reset helpers, auth-bypass helper
    GOOGLE_REFRESH_TOKEN=     # Gmail OAuth2 refresh token, for sending contact-form email
    NEXTAUTH_SECRET=
    ADMIN_EMAIL=              # Google account promoted to admin on sign-in
+   NEXT_PUBLIC_SITE_URL=     # canonical origin (metadata, sitemap, robots); required in production
+   CRON_SECRET=              # bearer token Vercel Cron sends to /api/cron/*; required in production
    CLOUDINARY_CLOUD_NAME=
    CLOUDINARY_API_KEY=
    CLOUDINARY_API_SECRET=
@@ -107,7 +113,7 @@ e2e/              Playwright tests, DB seed/reset helpers, auth-bypass helper
 | Script | Purpose |
 |---|---|
 | `npm run dev` | Start the dev server (Turbopack) |
-| `npm run build` / `npm run start` | Production build / start |
+| `npm run build` / `npm run start` | Production build / start (does **not** run migrations) |
 | `npm run lint` | ESLint |
 | `npm run migrate` | `prisma migrate dev` |
 | `npm run gen` | `prisma generate` |
