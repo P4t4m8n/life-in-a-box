@@ -84,7 +84,7 @@ const HeroSection = () => {
         </h1>
 
         <p className="leading-[1.6] text-(--muted)">
-          נתקעתי בקופסא שהייתי קטן, מאז מנסה לצאת ממנה
+          נתקעתי בקופסא כשהייתי קטן, מאז מנסה לצאת ממנה
         </p>
       </span>
     </section>
@@ -184,7 +184,7 @@ const RecentlyPublishedSkeleton = () => (
         </h2>
       </div>
       <p className="m-0 max-w-sm leading-[1.7] text-(--muted) max-[680px]:mt-4">
-        שטויות שפירסמתי לאחרונה
+        שטויות שפרסמתי לאחרונה
       </p>
     </div>
     <div className="grid lg:grid-cols-3 px-4 lg:px-0 gap-6 grid-cols-1 items-center justify-center">
@@ -327,7 +327,7 @@ const PrivateSection = ({
             </div>
             <Link href={`/posts/${post.id}`} className="">
               <span className="mt-5 inline-flex items-center gap-2.5 text-sm font-extrabold text-[#676b68]">
-                המשך קריאה לחברים בלבד, הרשם עכשיו
+                המשך קריאה לחברים בלבד, רוצים להיות חברים שלי?
                 <ArrowLeft aria-hidden="true" size={18} />
               </span>
             </Link>
