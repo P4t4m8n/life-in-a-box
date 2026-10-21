@@ -32,7 +32,6 @@ const signInCallback = async ({ user }: { user: User | AdapterUser }) => {
       data: {
         email: user.email,
         name: user.name,
-        image: user.image,
         role: isAdmin ? Role.ADMIN : Role.USER,
         status: isAdmin ? UserStatus.APPROVED : UserStatus.PENDING,
       },
