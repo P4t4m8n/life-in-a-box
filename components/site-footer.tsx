@@ -1,11 +1,5 @@
 import Link from "next/link";
 
-// --- Icons ---
-import { LinkedinSvg } from "./Icons/LinkedinSvg";
-import { GitSvg } from "./Icons/GitSVG";
-
-const ERAN_GIT = "https://github.com/P4t4m8n";
-const ERAN_LINKEDIN = "https://www.linkedin.com/in/michaelieran/";
 
 export function SiteFooter() {
   return (
@@ -35,19 +29,7 @@ export function SiteFooter() {
     
       </nav>
       <div className="flex items-center md:justify-center gap-1 w-full">
-        <p>{`נבנה ע"י Eran Michaeli`}</p>
-        <span className="flex gap-1">
-          <Link href={ERAN_GIT} target="_blank">
-            <GitSvg />
-          </Link>
-          <Link
-            href={ERAN_LINKEDIN}
-            className="md:w-6 md:h-6 w-4 h-4 "
-            target="_blank"
-          >
-            <LinkedinSvg className="md:w-6 md:h-6 w-4 h-4 fill-white" />
-          </Link>
-        </span>
+        
       </div>
     </footer>
   );
