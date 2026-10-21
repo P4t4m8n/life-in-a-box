@@ -59,7 +59,7 @@ async function AuthNav() {
   return (
     <li className="flex items-center gap-2 text-sm font-bold">
       <SignOutButton className="hover:underline" />
-      <UserAvatar name={session.user.name} image={session.user.image} />
+      <UserAvatar name={session.user.name} />
     </li>
   );
 }
