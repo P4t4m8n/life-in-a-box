@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Gveret_Levin, Noto_Sans_Hebrew } from "next/font/google";
-
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/next";
 
 const notoSansHebrew = Noto_Sans_Hebrew({
   variable: "--font-noto-hebrew",
@@ -40,7 +40,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${notoSansHebrew.variable} ${gveretLevin.variable}`}
       data-scroll-behavior="smooth"
     >
-      <body className="flex flex-col min-h-screen ">{children}</body>
+      <body className="flex flex-col min-h-screen ">
+        {children} <Analytics />
+      </body>
     </html>
   );
 }
