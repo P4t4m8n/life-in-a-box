@@ -7,6 +7,8 @@ import { getSession } from "@/lib/auth";
 // --- Components ---
 import { StickerBadge } from "@/components/sticker-badge";
 import { SignOutButton } from "@/components/sign-out-button";
+import { DeleteAccountButton } from "@/components/delete-account-button";
+import { deleteOwnAccount } from "@/lib/actions/user-actions";
 
 // --- Prisma ---
 import { Role, UserStatus } from "@/generated/prisma/enums";
@@ -84,6 +86,9 @@ export default async function ProfilePage() {
         )}
 
         <SignOutButton className="mt-6 inline-flex min-h-11 items-center justify-center rounded-sm bg-(--leaf) px-5 py-3 font-extrabold text-white no-underline" />
+        <div className="mt-8 border-t border-dashed border-(--line) pt-6">
+          <DeleteAccountButton action={deleteOwnAccount} />
+        </div>
       </div>
     </div>
   );

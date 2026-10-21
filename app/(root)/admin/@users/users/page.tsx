@@ -1,5 +1,10 @@
 // --- Actions ---
-import { getAllUsers, setUserStatus } from "@/lib/actions/user-actions";
+import {
+  deleteUserByAdmin,
+  getAllUsers,
+  setUserStatus,
+} from "@/lib/actions/user-actions";
+import { DeleteUserButton } from "@/components/admin/delete-user-button";
 
 // --- Prisma ---
 import type { UserStatus } from "@/generated/prisma/enums";
@@ -77,6 +82,11 @@ const UserPreview = ({
               </button>
             </form>
           ))}
+          <DeleteUserButton
+            action={deleteUserByAdmin.bind(null, user.id)}
+            userEmail={user.email}
+            disabled={isProtectedAdmin}
+          />
         </div>
       </td>
     </tr>

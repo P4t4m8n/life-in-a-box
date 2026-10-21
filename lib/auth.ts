@@ -67,11 +67,20 @@ const jwtCallback = async ({ token }: { token: JWT }) => {
     where: { email: token.email },
   });
 
-  if (dbUser) {
-    token.id = dbUser.id;
-    token.role = dbUser.role;
-    token.status = dbUser.status;
+  if (!dbUser) {
+    token.id = "";
+    token.sub = "";
+    token.email = undefined;
+    token.name = undefined;
+    token.picture = undefined;
+    token.role = Role.USER;
+    token.status = UserStatus.PENDING;
+    return token;
   }
+
+  token.id = dbUser.id;
+  token.role = dbUser.role;
+  token.status = dbUser.status;
 
   return token;
 };
@@ -112,7 +121,10 @@ export const authOptions: NextAuthOptions = {
 
 // Deduped per request: the header, the page, and every server action that reads the
 // session share one JWT decode + one User lookup instead of repeating them.
-export const getSession = cache(() => getServerSession(authOptions));
+export const getSession = cache(async () => {
+  const session = await getServerSession(authOptions);
+  return session?.user?.id ? session : null;
+});
 
 // Defense-in-depth guard for server actions, in case route-level protection is ever bypassed.
 export async function requireAdmin() {
