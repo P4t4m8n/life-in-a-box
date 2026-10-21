@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Gveret_Levin, Noto_Sans_Hebrew } from "next/font/google";
+import localFont from "next/font/local";
+import { Noto_Sans_Hebrew } from "next/font/google";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
 
@@ -8,10 +9,11 @@ const notoSansHebrew = Noto_Sans_Hebrew({
   subsets: ["hebrew"],
 });
 
-const gveretLevin = Gveret_Levin({
+const gveretLevin = localFont({
+  src: "./fonts/GveretLevin-Regular.woff2",
   variable: "--font-handwritten",
-  subsets: ["hebrew"],
   weight: "400",
+  adjustFontFallback: false,
 });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";

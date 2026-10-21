@@ -5,7 +5,7 @@ test.describe("post access (guest)", () => {
   test("redirects to login for a member-only post", async ({ page }) => {
     const post = await findPostByTitle("פוסט לחברים בלבד");
 
-    await page.goto(`/posts/${post.id}`);
+    await page.goto(`/posts/${post.id}`, { waitUntil: "domcontentloaded" });
     await expect(page).toHaveURL(/\/login/);
   });
 
