@@ -227,12 +227,10 @@ const RecentlyPublished = ({ posts }: { posts: IPostDTO[] }) => {
             className="mt-4 -rotate-1 font-serif text-[clamp(2.4rem,5vw,4.5rem)] leading-none font-normal"
             id="latest-title"
           >
-            פורסם לאחרונה
+          שטויות שפירסמתי לאחרונה
           </h2>
         </div>
-        <p className="m-0 max-w-sm leading-[1.7] text-(--muted) max-[680px]:mt-4">
-          שטויות שפירסמתי לאחרונה
-        </p>
+   
       </div>
       <div className="grid lg:grid-cols-3 px-4 lg:px-0  gap-6 grid-cols-1 items-center justify-center">
         {posts.map((post, index) => (
