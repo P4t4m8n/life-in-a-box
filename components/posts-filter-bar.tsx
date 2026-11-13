@@ -40,8 +40,8 @@ export function PostsFilterBar({ tags }: { tags: string[] }) {
           onChange={(e) => e.currentTarget.form?.requestSubmit()}
           className={inputsClassName + " w-[calc(50%-0.5rem)] lg:w-auto"}
         >
-          <option value="newest">החדש ביותר</option>
-          <option value="oldest">הישן ביותר</option>
+          <option value="newest">עודכנו לאחרונה</option>
+          <option value="oldest">עודכנו מזמן</option>
         </select>
 
         <button

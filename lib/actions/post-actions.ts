@@ -243,7 +243,10 @@ export const getPublicPosts = async (
   return prisma.post.findMany({
     where,
     include: { tags: true },
-    orderBy: { createdAt: sort === "oldest" ? "asc" : "desc" },
+    orderBy: [
+      { updatedAt: sort === "oldest" ? "asc" : "desc" },
+      { id: sort === "oldest" ? "asc" : "desc" },
+    ],
     ...(pageSize
       ? { take: pageSize, skip: ((page ?? 1) - 1) * pageSize }
       : {}),
